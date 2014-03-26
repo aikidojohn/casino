@@ -10,7 +10,6 @@ public class NeuralNetwork {
 	private final int numberOutputs;
 	private final int numberHiddenLayers;
 	private final int numberNeuronsPerHiddenLayer;
-	private double fitness;
 	
 	public NeuralNetwork(int nInputs, int nOutputs, int nHiddenLayers, int nNeuronsPerHiddenLayer) {
 		this.numberInputs = nInputs;
@@ -48,14 +47,6 @@ public class NeuralNetwork {
 			layer.setWeights(weights.subList(lastIndex, lastIndex + layer.getNumberWeights()));
 			lastIndex += layer.getNumberWeights();
 		}
-	}
-
-	public double getFitness() {
-		return fitness;
-	}
-
-	public void setFitness(double fitness) {
-		this.fitness = fitness;
 	}
 
 	@Override

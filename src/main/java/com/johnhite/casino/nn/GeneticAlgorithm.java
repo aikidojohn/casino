@@ -5,18 +5,27 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 public class GeneticAlgorithm {
-	private List<Chromosome> population = Lists.newArrayList();
-	private final double mutationRate = 0.05;
-	private final double crossoverRate = 0.5;
-	private Chromosome bestSoFar;
-	private Chromosome bestLastRound;
+	private List<? extends Genome> population = Lists.newArrayList();
+	private final double mutationRate;
+	private final double crossoverRate;
+	private Genome bestSoFar;
+	private Genome bestLastRound;
 	private double averageFitness;
 	
-	public Chromosome getBestSoFar() {
+	public GeneticAlgorithm() {
+		this(0.7, 0.05);
+	}
+	
+	public GeneticAlgorithm(double crossoverRate, double mutationRate) {
+		this.crossoverRate = crossoverRate;
+		this.mutationRate = mutationRate;
+	}
+	
+	public Genome getBestSoFar() {
 		return bestSoFar;
 	}
 	
-	public Chromosome getBestLastRound() {
+	public Genome getBestLastRound() {
 		return bestLastRound;
 	}
 
@@ -24,40 +33,40 @@ public class GeneticAlgorithm {
 		return averageFitness;
 	}
 
-	public List<Chromosome> getPopulation() {
+	public List<? extends Genome> getPopulation() {
 		return population;
 	}
 	
-	public void setPopulation(List<Chromosome> chromosomes) {
+	public void setPopulation(List<? extends Genome> chromosomes) {
 		this.population = chromosomes;
 	}
 	
-	public List<Chromosome> epoch() {
-		List<Chromosome> newPopulation = Lists.newArrayList();
-		Chromosome best = null;
+	public List<? extends Genome> epoch() {
+		List<List<Double>> newPopulation = Lists.newArrayList();
+		Genome best = null;
 		double totalFitness = 0;
-		for (Chromosome c : population) {
+		for (Genome c : population) {
 			totalFitness += c.getFitness();
 			if (best == null || best.getFitness() < c.getFitness()) {
 				best = c;
 			}
 		}
 		
-		if(bestSoFar == null || best.getFitness() > bestSoFar.getFitness() ) {
-			bestSoFar = best;
+		bestLastRound = new BasicGenome(Lists.newArrayList(best.getGenes()), best.getFitness());
+		if(bestSoFar == null || bestLastRound.getFitness() > bestSoFar.getFitness() ) {
+			bestSoFar = bestLastRound;
 		}
-		bestLastRound = best;
 		averageFitness = totalFitness / population.size();
 		
 		while(newPopulation.size() < population.size()) {
-			Chromosome mom = rouletteSelect(totalFitness);
-			Chromosome dad = rouletteSelect(totalFitness);
+			Genome mom = rouletteSelect(totalFitness);
+			Genome dad = rouletteSelect(totalFitness);
 			
 			if (mom == null || dad == null) {
 				continue;
 			}
-			Chromosome a = mom.clone();
-			Chromosome b = dad.clone();
+			List<Double> a = mom.getGenes();
+			List<Double> b = dad.getGenes();
 			
 			crossover(a, b);
 			
@@ -66,35 +75,38 @@ public class GeneticAlgorithm {
 			newPopulation.add(a);
 			newPopulation.add(b);
 		}
-		
-		this.population = newPopulation;
-		return newPopulation;
+		//update all the genes
+		for (int i=0; i < population.size(); i++) {
+			population.get(i).setGenes(newPopulation.get(i));
+			population.get(i).resetFitness();
+		}
+		return this.population;
 	}
 	
-	private void crossover(Chromosome a, Chromosome b) {
+	private void crossover(List<Double> a, List<Double> b) {
 		if (Math.random() < this.crossoverRate) {
-			int cut = (int) Math.random() * a.getGenes().size();
+			int cut = (int) Math.random() * a.size();
 			for (int i=0; i < cut; i++) {
-				a.getGenes().set(i, b.getGenes().get(i));
+				a.set(i, b.get(i));
 			}
-			for (int i = cut; i < a.getGenes().size(); i++) {
-				b.getGenes().set(i, a.getGenes().get(i));
+			for (int i = cut; i < a.size(); i++) {
+				b.set(i, a.get(i));
 			}
 		}
 	}
 	
-	private void mutate(Chromosome c) {
-		for (int i= 0; i < c.getGenes().size(); i++) {
+	private void mutate(List<Double> c) {
+		for (int i= 0; i < c.size(); i++) {
 			if (Math.random() < this.mutationRate) {
-				c.getGenes().set(i, MathUtil.randomGaussian());
+				c.set(i, MathUtil.randomGaussian());
 			}
 		}
 	}
 	
-	private Chromosome rouletteSelect(double totalFitness) {
+	private Genome rouletteSelect(double totalFitness) {
 		double target = Math.random() * totalFitness;
 		double fitnessSoFar = 0.0;
-		for(Chromosome c : population) {
+		for(Genome c : population) {
 			fitnessSoFar += c.getFitness();
 			if(fitnessSoFar >= target) {
 				return c;

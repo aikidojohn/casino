@@ -5,11 +5,10 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import com.johnhite.casino.Card;
 import com.johnhite.casino.blackjack.Action;
-import com.johnhite.casino.blackjack.DeckListener;
 import com.johnhite.casino.blackjack.Hand;
 import com.johnhite.casino.nn.NeuralNetwork;
 
-public class NeuralStrategy implements BlackjackStrategy, DeckListener  {
+public class NeuralStrategy implements BlackjackStrategy  {
 	private List<Double> weights;
 	private NeuralNetwork brain;
 	
@@ -21,22 +20,14 @@ public class NeuralStrategy implements BlackjackStrategy, DeckListener  {
 	}
 	
 	public NeuralStrategy(List<Double> weights) {
-		//weights = Lists.newArrayList(new Double[]{-0.5163725175066102, -0.800726406588373, 1.4614955550562039, 1.3218453124359228, -2.166696151791796, 0.5518980940597285, 0.4037986574459864, 2.459917301250063, -0.5389326211689554, 0.3640763187713232, 0.24325580716322293, -1.40374585549446, -0.36919228160892453, 0.6703840749043762, 1.4984146590894314, 0.9071628513852088, -0.6630546193800719, 0.2530297392612771, 1.429756501719954, -0.8128490103039268, -0.8202312703768506, 2.0128048581212123, -0.4701601198291235, -0.030396340525975573, 2.111687799271375, -0.557452583346487, -0.05948709554893824, 1.1700323150962222, -0.10385481838848172, -0.5836485322701139, 0.7718525975625411, 1.0521491946122183, -0.2948015464743724, -3.194843646311541, 0.09580602567922644, -0.1427236447981965, 0.978049882801536, -0.9336485146765918, 1.4942401134749794, 0.5725968786038788, -0.1363956774115122, -0.5558130688410249, -1.9717340102918233, 2.2531228439993285, -0.5788246237599061, 0.5664243953015524, -1.3487302002835913, 1.0424764339474966, -0.5117728500324598, -0.7979603652915161, -0.7551344161050263, -0.1053816489712878, 0.7323298016306458, 1.2061116549764306, 2.4361938008561568, -0.06878425795263518, -1.1993848810217924, 0.5694454991032071, -0.4977618365336658, 0.35332358708643974, -0.20625464688301562, 1.0276524566527034, 1.3063548876388367, -0.5782221007644792, 0.07975474609279827, 2.3412075725402426});
 		this.weights = weights;
 		brain = new NeuralNetwork(5,1,1,20);
 		brain.setWeights(weights);
 	}
-
-	@Override
-	public void cardDealt(Card c) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void shuffle() {
-		// TODO Auto-generated method stub
-		
+	
+	public NeuralStrategy(NeuralNetwork brain) {
+		this.weights = brain.getWeights();
+		this.brain = brain;
 	}
 
 	@Override
@@ -65,17 +56,18 @@ public class NeuralStrategy implements BlackjackStrategy, DeckListener  {
 	}
 
 	private Action fromDouble(double val) {
-		if (val <= 0.2) {
-			return Action.HIT;
-		}
-		if (val <= 0.4) {
+		int action = (int)(val * 4.0);
+		if (action == 0) {
 			return Action.DOUBLE;
 		}
-		if (val <= 0.6) {
+		if (action == 1) {
+			return Action.SURRENDER;
+		}
+		if (action == 2) {
 			return Action.SPLIT;
 		}
-		if (val <= 0.8) {
-			return Action.SURRENDER;
+		if (action == 3) {
+			return Action.HIT;
 		}
 		return Action.STAND;
 	}

@@ -7,69 +7,28 @@ import com.johnhite.casino.Card;
 import com.johnhite.casino.blackjack.Action;
 import com.johnhite.casino.blackjack.DeckListener;
 import com.johnhite.casino.blackjack.Hand;
+import com.johnhite.casino.nn.Genome;
+import com.johnhite.casino.nn.MathUtil;
 import com.johnhite.casino.nn.NeuralNetwork;
 
 
-public class GeneticLearningStrategy implements BlackjackStrategy, DeckListener {
+public class GeneticLearningStrategy implements BlackjackStrategy, Genome {
 	private NeuralNetwork brain;
+	private NeuralStrategy neuralStrategy;
 	private int amountWagered;
 	private int amountWon;
 	private int numberGames= 0;
-	private int numberRounds= 0;
-	private int averageSum=0;
+	private int gamesWon= 0;
+	private List<Double> roundFitness = Lists.newArrayList();
 	
 	public GeneticLearningStrategy(NeuralNetwork brain) {
 		this.brain = brain;
-	}
-	
-	@Override
-	public void cardDealt(Card c) {
-		
-	}
-
-	@Override
-	public void shuffle() {
+		this.neuralStrategy = new NeuralStrategy(brain);
 	}
 
 	@Override
 	public Action play(Card dealer, Hand hand) {
-		List<Double> inputs = Lists.newArrayList();
-		int dv = dealer.getValue();
-		if (dv == 1) {
-			dv += 10;
-		}
-		
-		inputs.add((double)dv);
-		inputs.add((double)hand.getScore());
-		inputs.add((double)hand.getNumberCards());
-		inputs.add(hand.isPair() ? 1.0 : 0.0);
-		inputs.add(hand.isSoft() ? 1.0 : 0.0);
-		
-		double result = brain.update(inputs).get(0);
-		Action action = fromDouble(result);
-		if (action == Action.SPLIT && !hand.isPair()) {
-			return Action.STAND;
-		}
-		if (action == Action.DOUBLE && hand.isDone()) {
-			return Action.STAND;
-		}
-		return action;
-	}
-	
-	private Action fromDouble(double val) {
-		if (val <= 0.2) {
-			return Action.HIT;
-		}
-		if (val <= 0.4) {
-			return Action.DOUBLE;
-		}
-		if (val <= 0.6) {
-			return Action.SPLIT;
-		}
-		if (val <= 0.8) {
-			return Action.SURRENDER;
-		}
-		return Action.STAND;
+		return neuralStrategy.play(dealer, hand);
 	}
 
 	@Override
@@ -81,28 +40,48 @@ public class GeneticLearningStrategy implements BlackjackStrategy, DeckListener 
 	public void notifyResult(Hand dealerHand, Hand playerHand, int amountWon) {
 		this.amountWon += amountWon;
 		this.amountWagered += playerHand.getBet();
-		/*this.numberGames++;
-		if (this.numberGames > 0 && this.numberGames % 100 == 0) {
-			averageSum += (double)this.amountWon / (double)amountWagered;
-			this.numberRounds++;
+		this.numberGames++;
+		if (amountWon > 0) {
+			gamesWon++;
+		}
+		/*if (this.numberGames > 0 && this.numberGames % 100 == 0) {
+			roundFitness.add((double)this.amountWon / (double)amountWagered);
+			//averageSum += (double)this.amountWon / (double)amountWagered;
+			//this.numberRounds++;
+			totalWon += this.amountWon;
+			totalWagered += this.amountWagered;
+			this.amountWagered = 0;
+			this.amountWon = 0;
 		}*/
-		brain.setFitness(getFitness());
 	}
 	
-	public void resetStats() {
+	@Override
+	public void resetFitness() {
 		this.amountWagered = 0;
 		this.amountWon = 0;
 		this.numberGames =0;
-		this.numberRounds =0;
-		this.averageSum = 0;
-		brain.setFitness(0);
+		this.gamesWon =0;
+		roundFitness.clear();
 	}
 	
+	@Override
 	public double getFitness() {
-		/*if (numberRounds > 0)
-			return averageSum / numberRounds;
-		return Integer.MIN_VALUE;
-		*/
-		return (double)amountWon / (double)amountWagered;
+		/*if (roundFitness.size() > 0)
+			return ((double)totalWon / (double)totalWagered) / MathUtil.std(roundFitness);
+			//return (double)averageSum / (double)numberRounds;
+		return Integer.MIN_VALUE;*/
+		//return (double)amountWon / (double)amountWagered;
+		return (double)gamesWon / (double)numberGames;
+	}
+
+
+	@Override
+	public List<Double> getGenes() {
+		return brain.getWeights();
+	}
+	
+	@Override
+	public void setGenes(List<Double> genes) {
+		this.brain.setWeights(genes);
 	}
 }

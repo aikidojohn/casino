@@ -12,7 +12,6 @@ import com.johnhite.casino.blackjack.strategy.InteractiveStrategy;
 import com.johnhite.casino.blackjack.strategy.KOStrategy;
 import com.johnhite.casino.blackjack.strategy.NeuralStrategy;
 import com.johnhite.casino.blackjack.strategy.StrategyPrinter;
-import com.johnhite.casino.nn.Chromosome;
 import com.johnhite.casino.nn.GeneticAlgorithm;
 import com.johnhite.casino.nn.NeuralNetwork;
 
@@ -151,7 +150,7 @@ public class Blackjack {
 		List<Blackjack> games = Lists.newArrayList();
 		List<GeneticLearningStrategy> strategies = Lists.newArrayList();
 		List<Player> allPlayers =Lists.newArrayList();
-		for (int i=0; i < 250; i++) {
+		for (int i=0; i < 100; i++) {
 			Deck deck = new Deck(8);
 			deck.shuffle();
 			
@@ -169,30 +168,18 @@ public class Blackjack {
 			allPlayers.addAll(players);
 			
 			Blackjack game = new Blackjack(deck, players);
-			game.addDeckListener(p1);
-			game.addDeckListener(p2);
 			games.add(game);
 		}
 
 		GeneticAlgorithm ga = new GeneticAlgorithm();
+		ga.setPopulation(strategies);
 		
 		//play 1000 hands 
 		for (int i=0; i< 50000; i++) {
-			if (i > 0 && i % 5000 == 0) {
-				List<Chromosome> population = Lists.newArrayList();
-				for (NeuralNetwork brain : brains) {
-					population.add(new Chromosome(brain.getWeights(), brain.getFitness()));
-				}
-				ga.setPopulation(population);
-				List<Chromosome> newPopulation = ga.epoch();
+			if (i > 0 && i % 1000 == 0) {
+				ga.epoch();
 				System.out.println("Starting generation " + i + ". Best So Far: " + ga.getBestSoFar().getFitness() + " Best This Round: " + ga.getBestLastRound().getFitness() + " Average Fitness: " + ga.getAverageFitness());
-				for (int j = 0; j < newPopulation.size(); j++) {
-					brains.get(j).setFitness(0);
-					brains.get(j).setWeights(newPopulation.get(j).getGenes());
-				}
-				for (GeneticLearningStrategy s : strategies) {
-					s.resetStats();
-				}
+				
 				for (Player player : allPlayers) {
 					player.setMoney(Integer.MAX_VALUE/2);
 				}
@@ -251,8 +238,6 @@ public class Blackjack {
 		players.add(new Player(100000, p2));
 		
 		Blackjack game = new Blackjack(deck, players);
-		game.addDeckListener(p1);
-		game.addDeckListener(p2);
 		for (int i=0; i< 5000; i++) {
 			game.playRound();
 		}
