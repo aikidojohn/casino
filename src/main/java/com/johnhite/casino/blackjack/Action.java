@@ -5,5 +5,7 @@ public enum Action {
 	HIT,
 	DOUBLE,
 	SPLIT,
-	SURRENDER
+	SURRENDER,
+	FREE_SPLIT,
+	FREE_DOUBLE
 }

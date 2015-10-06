@@ -7,11 +7,11 @@ import com.johnhite.casino.Card;
 import com.johnhite.casino.Card.Ordinal;
 
 public class Hand implements Comparable<Hand> {
-	private List<Card> hand = Lists.newArrayList();
-	private int score;
-	private boolean isSoft;
-	private int bet;
-	private boolean isDone;
+	protected List<Card> hand = Lists.newArrayList();
+	protected int score;
+	protected boolean isSoft;
+	protected int bet;
+	protected boolean isDone;
 	
 	public Hand(List<Card> cards) {
 		this.hand = cards;
@@ -41,6 +41,10 @@ public class Hand implements Comparable<Hand> {
 	
 	public boolean isPair() {
 		return (hand.size() == 2) && (hand.get(0).getOrdinal() == hand.get(1).getOrdinal());
+	}
+	
+	public boolean canSplit() {
+		return hand.size() == 2 && hand.get(0).getValue() == hand.get(1).getValue();
 	}
 	
 	public boolean isSoft() {

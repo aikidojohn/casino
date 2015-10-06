@@ -49,12 +49,36 @@ public class Player {
 		h.setDone(true);
 	}
 	
+	public Hand freeDoubleBet(Hand h) {
+		if (h instanceof FreeHand) {
+			// can happen after a free split
+			FreeHand free = (FreeHand)h;
+			free.setFreeBet(free.getFreeBet()*2);
+			return free;
+		}
+		FreeHand free = new FreeHand(h);
+		free.setFreeBet(h.getBet());
+		free.setDone(true);
+		hands.remove(h);
+		hands.add(free);
+		return free;
+	}
+	
 	public Hand[] splitHand(Hand h) {
 		Hand newHand = new Hand(h.getBet());
 		newHand.addCard(h.removeCardAt(0));
 		
 		this.hands.add(newHand);
 		this.money -= h.getBet();
+		return new Hand[]{ h, newHand };
+	}
+	
+	public Hand[] freeSplitHand(Hand h) {
+		FreeHand newHand = new FreeHand(0);
+		newHand.setFreeBet(h.getBet());
+		newHand.addCard(h.removeCardAt(0));
+		
+		this.hands.add(newHand);
 		return new Hand[]{ h, newHand };
 	}
 	

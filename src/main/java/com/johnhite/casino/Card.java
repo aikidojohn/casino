@@ -3,9 +3,9 @@ package com.johnhite.casino;
 
 public class Card {
 	public static enum Suit {
-		CLUB(0, 'C'),
+		CLUB(2, 'C'),
 		DIAMOND(1, 'D'),
-		HEART(2, 'H'),
+		HEART(0, 'H'),
 		SPADE(3, 'S');
 		private final char symbol;
 		private final int id;

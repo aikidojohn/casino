@@ -1,7 +1,10 @@
 package com.johnhite.casino;
 
+import java.security.SecureRandom;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import com.google.common.base.Optional;
@@ -26,8 +29,9 @@ public class Deck implements Iterable<Card> {
 	
 	public void shuffle() {
 		Shuffle s = (Deck d) -> { 
+			final SecureRandom rand = new SecureRandom();
 			for (int i= d.cards.size()-1; i > 0; i--) {
-				int a = (int)(Math.random()*i);
+				int a = (int)(rand.nextDouble()*i);
 				Card tmp = d.cards.get(a);
 				d.cards.set(a, d.cards.get(i));
 				d.cards.set(i, tmp);
@@ -38,7 +42,7 @@ public class Deck implements Iterable<Card> {
 	
 	public void shuffle(Shuffle s) {
 		s.shuffle(this);
-		//deal index rest to 0;
+		//deal index reset to 0;
 		this.index = 0;
 		//put the shuffle marker in the bottom quarter
 		this.shuffleMarker = cards.size() - (int)(Math.random() * (cards.size() / 4));

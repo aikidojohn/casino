@@ -7,13 +7,13 @@ import com.johnhite.casino.Card;
 import com.johnhite.casino.Deck;
 import com.johnhite.casino.blackjack.strategy.BasicStrategy;
 import com.johnhite.casino.blackjack.strategy.DealerH17Strategy;
+import com.johnhite.casino.blackjack.strategy.EvolutionStrategy;
 import com.johnhite.casino.blackjack.strategy.GeneticLearningStrategy;
 import com.johnhite.casino.blackjack.strategy.InteractiveStrategy;
 import com.johnhite.casino.blackjack.strategy.KOStrategy;
 import com.johnhite.casino.blackjack.strategy.NeuralStrategy;
 import com.johnhite.casino.blackjack.strategy.StrategyPrinter;
 import com.johnhite.casino.nn.GeneticAlgorithm;
-import com.johnhite.casino.nn.NeuralNetwork;
 
 public class Blackjack {
 	private final Deck deck;
@@ -145,8 +145,69 @@ public class Blackjack {
 		}
 	}
 	
+	
+	public static List<Integer> genetic2() {
+		List<Blackjack> games = Lists.newArrayList();
+		List<EvolutionStrategy> strategies = Lists.newArrayList();
+		List<Player> allPlayers =Lists.newArrayList();
+		for (int i=0; i < 20000; i++) {
+			Deck deck = new Deck(8);
+			deck.shuffle();
+			
+			List<Player> players = Lists.newArrayList();
+			EvolutionStrategy p1 = new EvolutionStrategy();
+			EvolutionStrategy p2 = new EvolutionStrategy();
+			EvolutionStrategy p3 = new EvolutionStrategy();
+			EvolutionStrategy p4 = new EvolutionStrategy();
+			strategies.add(p1);
+			strategies.add(p2);
+			strategies.add(p3);
+			strategies.add(p4);
+			players.add(new Player(100000, p1));
+			players.add(new Player(100000, p2));
+			players.add(new Player(100000, p3));
+			players.add(new Player(100000, p4));
+			allPlayers.addAll(players);
+			
+			Blackjack game = new Blackjack(deck, players);
+			games.add(game);
+		}
+
+		GeneticAlgorithm ga = new GeneticAlgorithm();
+		ga.setPopulation(strategies);
+		
+		//play 5000 hands 
+		for (int i=0; i< 10000; i++) {
+			if (i > 0 && i % 1000 == 0) {
+				ga.epoch();
+				System.out.println("Starting generation " + i + ". Best So Far: " + ga.getBestSoFar().getFitness() + " Best This Round: " + ga.getBestLastRound().getFitness() + " Average Fitness: " + ga.getAverageFitness());
+				
+				for (Player player : allPlayers) {
+					player.setMoney(100000);
+				}
+			}
+			games.parallelStream().forEach(g -> g.playRound());
+			/*for (Blackjack game : games) {
+				game.playRound();
+			}*/
+		}
+		
+		//print out best chromosome
+		System.out.println("Best Found: " + ga.getBestSoFar());
+		System.out.println("Fitness: " + ga.getBestSoFar().getFitness());
+		System.out.println("Best Last Round: " + ga.getBestLastRound());
+		System.out.println();
+		/*for (Genome b : ga.getAllTheBest()) {
+			System.out.println("Strategy: " + b.getGenes());
+			System.out.println("Fitness: " + b.getFitness());
+			System.out.println();
+			testNeuralStrategy(b.getGenes());
+			StrategyPrinter.printStrategy( new NeuralStrategy(b.getGenes()) );
+		}*/
+		return ga.getBestSoFar().getGenes();
+	}
+	
 	public static List<Double> genetic() {
-		List<NeuralNetwork> brains = Lists.newArrayList();
 		List<Blackjack> games = Lists.newArrayList();
 		List<GeneticLearningStrategy> strategies = Lists.newArrayList();
 		List<Player> allPlayers =Lists.newArrayList();
@@ -155,16 +216,18 @@ public class Blackjack {
 			deck.shuffle();
 			
 			List<Player> players = Lists.newArrayList();
-			NeuralNetwork b1 = new NeuralNetwork(5,1,1,20);
-			NeuralNetwork b2 = new NeuralNetwork(5,1,1,20);
-			brains.add(b1);
-			brains.add(b2);
-			GeneticLearningStrategy p1 = new GeneticLearningStrategy(b1);
-			GeneticLearningStrategy p2 = new GeneticLearningStrategy(b2);
+			GeneticLearningStrategy p1 = new GeneticLearningStrategy();
+			GeneticLearningStrategy p2 = new GeneticLearningStrategy();
+			GeneticLearningStrategy p3 = new GeneticLearningStrategy();
+			GeneticLearningStrategy p4 = new GeneticLearningStrategy();
 			strategies.add(p1);
 			strategies.add(p2);
+			strategies.add(p3);
+			strategies.add(p4);
 			players.add(new Player(Integer.MAX_VALUE/2, p1));
 			players.add(new Player(Integer.MAX_VALUE/2, p2));
+			players.add(new Player(Integer.MAX_VALUE/2, p3));
+			players.add(new Player(Integer.MAX_VALUE/2, p4));
 			allPlayers.addAll(players);
 			
 			Blackjack game = new Blackjack(deck, players);
@@ -175,7 +238,7 @@ public class Blackjack {
 		ga.setPopulation(strategies);
 		
 		//play 1000 hands 
-		for (int i=0; i< 50000; i++) {
+		for (int i=0; i< 10000; i++) {
 			if (i > 0 && i % 1000 == 0) {
 				ga.epoch();
 				System.out.println("Starting generation " + i + ". Best So Far: " + ga.getBestSoFar().getFitness() + " Best This Round: " + ga.getBestLastRound().getFitness() + " Average Fitness: " + ga.getAverageFitness());
@@ -194,6 +257,13 @@ public class Blackjack {
 		System.out.println("Fitness: " + ga.getBestSoFar().getFitness());
 		System.out.println("Best Last Round: " + ga.getBestLastRound());
 		System.out.println();
+		/*for (Genome b : ga.getAllTheBest()) {
+			System.out.println("Strategy: " + b.getGenes());
+			System.out.println("Fitness: " + b.getFitness());
+			System.out.println();
+			testNeuralStrategy(b.getGenes());
+			StrategyPrinter.printStrategy( new NeuralStrategy(b.getGenes()) );
+		}*/
 		return ga.getBestSoFar().getGenes();
 	}
 	
@@ -238,12 +308,34 @@ public class Blackjack {
 		players.add(new Player(100000, p2));
 		
 		Blackjack game = new Blackjack(deck, players);
-		for (int i=0; i< 5000; i++) {
+		for (int i=0; i< 10000; i++) {
 			game.playRound();
 		}
 		
 		for (Player p : players) {
-			System.out.println(p.getMoney());
+			System.out.println(p.getMoney() + "\t" + (double)p.getMoney()/100000.0);
+		}
+	}
+	
+	public static void testGeneticStrategy(List<Integer> weights) {
+		Deck deck = new Deck(8);
+		deck.shuffle();
+		
+		List<Player> players = Lists.newArrayList();
+		players.add(new Player(100000, new BasicStrategy()));
+		players.add(new Player(100000, new BasicStrategy()));
+		EvolutionStrategy p1 = new EvolutionStrategy(weights);
+		EvolutionStrategy p2 = new EvolutionStrategy(weights);
+		players.add(new Player(100000, p1));
+		players.add(new Player(100000, p2));
+		
+		Blackjack game = new Blackjack(deck, players);
+		for (int i=0; i< 10000; i++) {
+			game.playRound();
+		}
+		
+		for (Player p : players) {
+			System.out.println(p.getMoney() + "\t" + (double)p.getMoney()/100000.0);
 		}
 	}
 	
@@ -270,11 +362,17 @@ public class Blackjack {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		List<Double> weights = genetic();
+		/*List<Double> weights = genetic();
 		System.out.println("Testing\n");
 		testNeuralStrategy(weights);
 		System.out.println("\nStrategy\n");
-		StrategyPrinter.printStrategy( new NeuralStrategy(weights) );
+		StrategyPrinter.printStrategy( new NeuralStrategy(weights) );*/
+		
+		List<Integer> weights = genetic2();
+		System.out.println("Testing\n");
+		testGeneticStrategy(weights);
+		System.out.println("\nStrategy\n");
+		StrategyPrinter.printStrategy( new EvolutionStrategy(weights) );
 		
 		//interactivePlay();
 		

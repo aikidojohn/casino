@@ -1,11 +1,11 @@
 package com.johnhite.casino.nn;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.OptionalDouble;
-import java.util.Random;
 
 public class MathUtil {
-	private static Random random = new Random(System.currentTimeMillis());
+	private static SecureRandom random = new SecureRandom();
 	
 	private MathUtil() {}
 	

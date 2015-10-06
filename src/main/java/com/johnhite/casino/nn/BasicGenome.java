@@ -4,22 +4,22 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-public class BasicGenome implements Genome {
-	private List<Double> genes = Lists.newArrayList();
+public class BasicGenome<T> implements Genome<T> {
+	private List<T> genes = Lists.newArrayList();
 	private double fitness;
 	
-	public BasicGenome(List<Double> genes, double fitness) {
+	public BasicGenome(List<T> genes, double fitness) {
 		this.genes = genes;
 		this.fitness = fitness;
 	}
 	
 	@Override
-	public List<Double> getGenes() {
+	public List<T> getGenes() {
 		return this.genes;
 	}
 	
 	@Override
-	public void setGenes(List<Double> genes) {
+	public void setGenes(List<T> genes) {
 		this.genes = genes;
 	}
 	
@@ -31,6 +31,23 @@ public class BasicGenome implements Genome {
 	@Override
 	public void resetFitness() {
 		this.fitness = 0;
+	}
+
+	@Override
+	public T getGene(int index) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setGene(int index, T value) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public T mutate(int index) {
+		return null;
 	}
 
 	@Override
